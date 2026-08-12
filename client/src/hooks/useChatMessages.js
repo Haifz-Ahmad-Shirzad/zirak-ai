@@ -1,5 +1,6 @@
 import { useState, useCallback, useRef } from "react";
 import { v4 as uuidv4 } from "uuid";
+const API_URL = import.meta.env.VITE_API_URL;
 
 /**
  * Generate a conversation title from the first user message.
@@ -126,7 +127,7 @@ export function useChatMessages(
       abortControllerRef.current = new AbortController();
 
       try {
-        const response = await fetch("http://localhost:5000/api/chat", {
+        const response = await fetch(`${API_URL}/api/chat`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",

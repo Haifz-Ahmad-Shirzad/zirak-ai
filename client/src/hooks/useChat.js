@@ -1,6 +1,8 @@
 import { useState, useCallback } from "react";
 import { v4 as uuidv4 } from "uuid";
 
+const API_URL = import.meta.env.VITE_API_URL;
+
 export function useChat(initialMessages = []) {
   const [messages, setMessages] = useState(initialMessages);
   const [isLoading, setIsLoading] = useState(false);
@@ -28,7 +30,7 @@ export function useChat(initialMessages = []) {
       setMessages((prev) => [...prev, assistantMessage]);
 
       try {
-        const response = await fetch("http://localhost:5000/api/chat", {
+        const response = await fetch(`${API_URL}/api/chat`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
