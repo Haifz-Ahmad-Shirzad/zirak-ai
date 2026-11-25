@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { t } from "../i18n.js";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { useCopyToClipboard } from "../hooks/useCopyToClipboard.js";
@@ -15,6 +16,7 @@ import {
 
 export default function ChatMessage({
   message,
+  locale = "en",
   isLastUserMessage,
   onStartEdit,
   isEditing,
@@ -22,17 +24,18 @@ export default function ChatMessage({
   onSaveEdit,
   onFeedback,
 }) {
-  if (!message) return null;
-
-  const { role, content = "", error } = message;
+  const safeMessage = message || { id: "", role: "assistant", content: "" };
+  const { role, content = "", error } = safeMessage;
   const isUser = role === "user";
   const [editText, setEditText] = useState(content);
   const [isCopied, handleCopy] = useCopyToClipboard();
   const [feedback, handleFeedback] = useFeedback(
-    message.feedback,
+    safeMessage.feedback,
     onFeedback,
-    message.id,
+    safeMessage.id,
   );
+
+  if (!message) return null;
 
   const handleKeyDown = (e) => {
     if (e.key === "Enter" && !e.shiftKey) {
@@ -43,12 +46,12 @@ export default function ChatMessage({
 
   return (
     <div
-      className={`py-6 px-6 flex gap-4 ${
+      className={`mx-auto w-full max-w-4xl py-6 px-4 sm:px-6 flex gap-4 ${
         isUser ? "bg-gray-950" : "bg-gray-800/50"
       }`}
     >
       <div className="w-8 h-8 rounded-full bg-gray-700 flex items-center justify-center shrink-0">
-        <span role="img" aria-label={isUser ? "User" : "AI Assistant"}>
+        <span role="img" aria-label={t(locale, isUser ? "user" : "assistant")}>
           {isUser ? "🧑" : "🤖"}
         </span>
       </div>
@@ -57,7 +60,7 @@ export default function ChatMessage({
         {isEditing ? (
           <div className="flex flex-col gap-2">
             <textarea
-              aria-label="Edit your message"
+              aria-label={t(locale, "editMessage")}
               value={editText}
               onChange={(e) => setEditText(e.target.value)}
               onKeyDown={handleKeyDown}
@@ -70,7 +73,7 @@ export default function ChatMessage({
                 onClick={() => onSaveEdit(editText)}
                 className="px-3 py-1 text-sm bg-blue-600 hover:bg-blue-700 rounded-md"
               >
-                Save & Submit
+                {t(locale, "saveSubmit")}
               </button>
               <button
                 onClick={onCancelEdit}
@@ -84,7 +87,7 @@ export default function ChatMessage({
           <div className="flex items-center gap-2 text-red-400">
             <AlertTriangle size={20} />
             <div>
-              <p className="font-bold">An error occurred:</p>
+              <p className="font-bold">{t(locale, "errorOccurred")}</p>
               <p>{content}</p>
             </div>
           </div>
@@ -113,7 +116,7 @@ export default function ChatMessage({
               <button
                 onClick={() => handleCopy(content)}
                 className="p-1 rounded-md bg-gray-700 text-gray-400 hover:text-white"
-                aria-label="Copy message"
+                aria-label={t(locale, "copyMessage")}
                 disabled={isCopied}
               >
                 {isCopied ? (
@@ -127,7 +130,7 @@ export default function ChatMessage({
                   <button
                     onClick={() => onStartEdit(message)}
                     className="p-1 rounded-md bg-gray-700 text-gray-400 hover:text-white"
-                    aria-label="Edit message"
+                    aria-label={t(locale, "editMessage")}
                   >
                     <Pencil size={14} />
                   </button>
@@ -137,14 +140,14 @@ export default function ChatMessage({
                   <button
                     onClick={() => handleFeedback("like")}
                     className={`p-1 rounded-md bg-gray-700 text-gray-400 hover:text-white ${feedback === "like" ? "text-blue-400" : ""}`}
-                    aria-label="Like response"
+                    aria-label={t(locale, "like")}
                   >
                     <ThumbsUp size={14} />
                   </button>
                   <button
                     onClick={() => handleFeedback("dislike")}
                     className={`p-1 rounded-md bg-gray-700 text-gray-400 hover:text-white ${feedback === "dislike" ? "text-red-400" : ""}`}
-                    aria-label="Dislike response"
+                    aria-label={t(locale, "dislike")}
                   >
                     <ThumbsDown size={14} />
                   </button>

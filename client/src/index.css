@@ -59,3 +59,19 @@
   outline: 2px solid var(--app-accent);
   outline-offset: 2px;
 }
+
+#zirak-app[dir="rtl"] .text-left { text-align: right; }
+#zirak-app[dir="rtl"] .left-0 { left: auto; right: 0; }
+#zirak-app[dir="rtl"] .right-1 { right: auto; left: 0.25rem; }
+#zirak-app[dir="rtl"] .-right-2 { right: auto; left: -0.5rem; }
+
+#zirak-app[data-theme="light"] .prose {
+  --tw-prose-body: #26334c;
+  --tw-prose-headings: #17233b;
+  --tw-prose-bold: #17233b;
+  --tw-prose-links: #9a650e;
+  --tw-prose-code: #17233b;
+}
+#zirak-app[data-theme="light"] [class~="bg-gray-800/50"] {
+  background-color: rgb(23 35 59 / 0.035);
+}

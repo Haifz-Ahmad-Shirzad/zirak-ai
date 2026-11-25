@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { t } from "../i18n.js";
 import {
   Plus,
   Settings,
@@ -16,6 +17,7 @@ export default function Sidebar({
   setCollapsed,
   mobileOpen,
   setMobileOpen,
+  locale = "en",
   onNewChat,
   conversations,
   activeConversationId,
@@ -35,6 +37,7 @@ export default function Sidebar({
   return (
     <nav
       aria-label="Main navigation"
+      aria-hidden={!mobileOpen}
       className={[
         "fixed inset-y-0 left-0 z-20 w-64 bg-gray-900 h-full flex flex-col text-gray-200 transition-all duration-300 border-r border-gray-700 md:static md:translate-x-0",
         mobileOpen ? "translate-x-0" : "-translate-x-full",
@@ -48,7 +51,7 @@ export default function Sidebar({
           type="button"
           onClick={() => setMobileOpen(false)}
           className="inline-flex min-h-10 min-w-10 items-center justify-center rounded-lg hover:bg-gray-700 md:hidden"
-          aria-label="Close sidebar"
+          aria-label={t(locale, "closeSidebar")}
         >
           <X className="w-5 h-5" />
         </button>
@@ -57,7 +60,7 @@ export default function Sidebar({
           type="button"
           onClick={() => setCollapsed(!collapsed)}
           className="hidden min-h-10 min-w-10 items-center justify-center rounded-lg hover:bg-gray-700 md:inline-flex"
-          aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+          aria-label={t(locale, collapsed ? "expandSidebar" : "collapseSidebar")}
           aria-expanded={!collapsed}
         >
           <ChevronLeft
@@ -70,11 +73,11 @@ export default function Sidebar({
         type="button"
         onClick={onNewChat}
         aria-label={collapsed ? "New Chat" : undefined}
-        title={collapsed ? "New Chat" : undefined}
+        title={collapsed ? t(locale, "newChat") : undefined}
         className="flex items-center gap-2 mx-3 mt-4 min-h-10 px-3 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg text-sm"
       >
         <Plus className="w-4 h-4 shrink-0" />
-        {!collapsed && "New Chat"}
+        {!collapsed && t(locale, "newChat")}
       </button>
 
       {!collapsed && (
@@ -83,8 +86,8 @@ export default function Sidebar({
             <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
             <input
               type="text"
-              placeholder="Search conversations..."
-              aria-label="Search conversations"
+              placeholder={t(locale, "searchConversations")}
+              aria-label={t(locale, "searchLabel")}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full bg-gray-800 border border-gray-700 rounded-md pl-8 pr-2 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
@@ -95,7 +98,7 @@ export default function Sidebar({
 
       <ul
         className="flex-1 overflow-y-auto mt-4 px-2"
-        aria-label="Chat history"
+        aria-label={t(locale, "chatHistory")}
       >
         {filteredConversations.map((conv) => (
           <li key={conv.id}>
@@ -150,7 +153,7 @@ export default function Sidebar({
                         onEditConversation(conv.id);
                       }}
                       className="min-h-10 min-w-10 rounded-lg hover:bg-gray-600"
-                      aria-label="Edit title"
+                      aria-label={t(locale, "editTitle")}
                     >
                       <Pencil className="w-4 h-4 mx-auto" />
                     </button>
@@ -176,20 +179,20 @@ export default function Sidebar({
         <button
           type="button"
           className="flex items-center gap-3 px-3 py-2 w-full min-h-10 rounded-lg hover:bg-gray-800 text-sm"
-          aria-label={collapsed ? "Settings" : undefined}
-          title={collapsed ? "Settings" : undefined}
+          aria-label={collapsed ? t(locale, "settings") : undefined}
+          title={collapsed ? t(locale, "settings") : undefined}
         >
           <Settings className="w-4 h-4 shrink-0" />
-          {!collapsed && "Settings"}
+          {!collapsed && t(locale, "settings")}
         </button>
         <button
           type="button"
           className="flex items-center gap-3 px-3 py-2 w-full min-h-10 rounded-lg hover:bg-gray-800 text-sm text-red-400"
-          aria-label={collapsed ? "Log out" : undefined}
-          title={collapsed ? "Log out" : undefined}
+          aria-label={collapsed ? t(locale, "logout") : undefined}
+          title={collapsed ? t(locale, "logout") : undefined}
         >
           <LogOut className="w-4 h-4 shrink-0" />
-          {!collapsed && "Log out"}
+          {!collapsed && t(locale, "logout")}
         </button>
       </div>
     </nav>

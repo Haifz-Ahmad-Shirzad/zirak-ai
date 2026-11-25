@@ -1,4 +1,5 @@
 import React, { useEffect } from "react";
+import { t } from "../i18n.js";
 
 export default function ConfirmModal({
   isOpen,
@@ -6,10 +7,10 @@ export default function ConfirmModal({
   onConfirm,
   title,
   children,
+  locale = "en",
 }) {
-  if (!isOpen) return null;
-
   useEffect(() => {
+    if (!isOpen) return undefined;
     const handleKeyDown = (event) => {
       if (event.key === "Escape") {
         onClose();
@@ -20,7 +21,9 @@ export default function ConfirmModal({
     return () => {
       document.removeEventListener("keydown", handleKeyDown);
     };
-  }, [onClose]);
+  }, [isOpen, onClose]);
+
+  if (!isOpen) return null;
 
   return (
     <div
@@ -43,13 +46,13 @@ export default function ConfirmModal({
             onClick={onClose}
             className="px-4 py-2 rounded-md bg-gray-600 hover:bg-gray-700 transition-colors"
           >
-            Cancel
+            {t(locale, "cancel")}
           </button>
           <button
             onClick={onConfirm}
             className="px-4 py-2 rounded-md bg-red-600 hover:bg-red-700 transition-colors"
           >
-            Delete
+            {t(locale, "delete")}
           </button>
         </div>
       </div>
