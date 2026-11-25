@@ -79,7 +79,7 @@ export default function ChatMessage({
                 onClick={onCancelEdit}
                 className="px-3 py-1 text-sm bg-gray-600 hover:bg-gray-500 rounded-md"
               >
-                Cancel
+                {t(locale, "cancel")}
               </button>
             </div>
           </div>

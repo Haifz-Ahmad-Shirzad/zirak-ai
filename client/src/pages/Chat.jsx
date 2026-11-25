@@ -10,7 +10,13 @@ import ChatMessageSkeleton from "../components/ChatMessageSkeleton";
 import { t } from "../i18n.js";
 
 export default function Chat() {
-  const [collapsed, setCollapsed] = useState(false);
+  const [collapsed, setCollapsed] = useState(() => {
+    try {
+      return window.localStorage.getItem("zirak-sidebar-collapsed") === "true";
+    } catch {
+      return false;
+    }
+  });
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [locale, setLocale] = useState(() => {
     try {
@@ -27,6 +33,14 @@ export default function Chat() {
       return "dark";
     }
   });
+
+  useEffect(() => {
+    try {
+      window.localStorage.setItem("zirak-sidebar-collapsed", String(collapsed));
+    } catch {
+      // The app remains usable when browser storage is unavailable.
+    }
+  }, [collapsed]);
 
   useEffect(() => {
     try {
@@ -78,6 +92,15 @@ export default function Chat() {
   } = useChatMessages(activeConversation, setConversations, selectedModel);
 
   const messagesEndRef = useRef(null);
+
+  useEffect(() => {
+    if (!mobileSidebarOpen) return undefined;
+    const closeOnEscape = (event) => {
+      if (event.key === "Escape") setMobileSidebarOpen(false);
+    };
+    document.addEventListener("keydown", closeOnEscape);
+    return () => document.removeEventListener("keydown", closeOnEscape);
+  }, [mobileSidebarOpen]);
 
   useEffect(() => {
     // Scroll to the bottom whenever messages change

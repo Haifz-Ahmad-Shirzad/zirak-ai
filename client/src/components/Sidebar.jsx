@@ -37,7 +37,6 @@ export default function Sidebar({
   return (
     <nav
       aria-label="Main navigation"
-      aria-hidden={!mobileOpen}
       className={[
         "fixed inset-y-0 left-0 z-20 w-64 bg-gray-900 h-full flex flex-col text-gray-200 transition-all duration-300 border-r border-gray-700 md:static md:translate-x-0",
         mobileOpen ? "translate-x-0" : "-translate-x-full",
