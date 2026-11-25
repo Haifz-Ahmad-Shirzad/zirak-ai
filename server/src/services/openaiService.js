@@ -86,3 +86,35 @@ export async function generateOpenAIResponse(message, history = []) {
     throw error;
   }
 }
+
+
+export async function* streamOpenAIResponse(message, history = [], { signal } = {}) {
+  const apiKey = process.env.OPENAI_API_KEY;
+  if (!apiKey) {
+    const error = new Error("OpenAI API key is not configured");
+    error.status = 500;
+    throw error;
+  }
+
+  const openai = new OpenAI({ apiKey });
+  const input = [
+    { role: "developer", content: ZIRAK_SYSTEM_INSTRUCTION },
+    ...history.map((item) => ({
+      role: item.role === "assistant" ? "assistant" : "user",
+      content: String(item.content ?? ""),
+    })),
+    { role: "user", content: message },
+  ];
+
+  const stream = await openai.responses.create({
+    model: "gpt-5-mini",
+    input,
+    stream: true,
+  }, { signal });
+
+  for await (const event of stream) {
+    if (event.type === "response.output_text.delta" && event.delta) {
+      yield event.delta;
+    }
+  }
+}

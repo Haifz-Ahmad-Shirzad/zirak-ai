@@ -137,7 +137,7 @@ export default function Chat() {
               ))
             )}
 
-            {loading && <ChatMessageSkeleton />}
+            {loading && messages[messages.length - 1]?.role !== "assistant" && <ChatMessageSkeleton />}
 
             {/* This empty div is the target for our auto-scrolling */}
             <div ref={messagesEndRef} />

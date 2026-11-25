@@ -137,43 +137,83 @@ export function useChatMessages(
             message: text,
             provider: selectedModel,
             history,
+            stream: true,
           }),
 
           signal: abortControllerRef.current.signal,
         });
 
-        const data = await response.json();
-
-        /*
-         * Handle HTTP errors.
-         */
         if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}));
           throw new Error(
-            data.error ||
+            errorData.error ||
               `API Error: ${response.status} ${response.statusText}`,
           );
         }
 
-        /*
-         * Handle application-level errors.
-         */
-        if (!data.success) {
-          throw new Error(data.error || "AI request failed");
+        const contentType = response.headers.get("content-type") || "";
+        if (!contentType.includes("application/x-ndjson")) {
+          const data = await response.json();
+          if (!data.success) throw new Error(data.error || "AI request failed");
+          updateMessages((prev) => [
+            ...prev,
+            { id: uuidv4(), role: "assistant", content: data.message },
+          ]);
+          return;
         }
 
-        /*
-         * Create assistant message.
-         */
-        const assistantMessage = {
-          id: uuidv4(),
-          role: "assistant",
-          content: data.message,
+        if (!response.body) {
+          throw new Error("Streaming is not available in this browser.");
+        }
+
+        const assistantMessageId = uuidv4();
+        let assistantText = "";
+        let buffer = "";
+        const decoder = new TextDecoder();
+
+        const saveAssistantText = (content) => {
+          updateMessages((prev) => {
+            const exists = prev.some((item) => item.id === assistantMessageId);
+            const nextMessage = {
+              id: assistantMessageId,
+              role: "assistant",
+              content,
+            };
+            return exists
+              ? prev.map((item) => item.id === assistantMessageId ? nextMessage : item)
+              : [...prev, nextMessage];
+          });
         };
 
-        /*
-         * Add assistant response.
-         */
-        updateMessages((prev) => [...prev, assistantMessage]);
+        const consumeLine = (line) => {
+          if (!line.trim()) return;
+          const event = JSON.parse(line);
+          if (event.error) throw new Error(event.error);
+          if (typeof event.delta === "string") {
+            assistantText += event.delta;
+            saveAssistantText(assistantText);
+          }
+        };
+
+        const reader = response.body.getReader();
+        try {
+          while (true) {
+            const { value, done } = await reader.read();
+            if (done) break;
+            buffer += decoder.decode(value, { stream: true });
+            const lines = buffer.split("\n");
+            buffer = lines.pop() || "";
+            for (const line of lines) consumeLine(line);
+          }
+          buffer += decoder.decode();
+          if (buffer.trim()) consumeLine(buffer);
+        } finally {
+          reader.releaseLock();
+        }
+
+        if (!assistantText) {
+          throw new Error("The selected provider returned an empty response.");
+        }
       } catch (error) {
         /*
          * User stopped generation.

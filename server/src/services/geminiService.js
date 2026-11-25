@@ -103,3 +103,42 @@ export async function generateGeminiResponse(message, history = []) {
     throw error;
   }
 }
+
+
+export async function* streamGeminiResponse(message, history = [], { signal } = {}) {
+  const apiKey = process.env.GEMINI_API_KEY;
+  if (!apiKey) {
+    const error = new Error("Gemini API key is not configured");
+    error.status = 500;
+    throw error;
+  }
+
+  const ai = new GoogleGenAI({ apiKey });
+  const contents = [
+    ...history.map((item) => ({
+      role: item.role === "assistant" ? "model" : "user",
+      parts: [{ text: String(item.content ?? "") }],
+    })),
+    { role: "user", parts: [{ text: message }] },
+  ];
+
+  try {
+    const stream = await ai.models.generateContentStream({
+      model: "gemini-3.5-flash",
+      config: { systemInstruction: ZIRAK_SYSTEM_INSTRUCTION, abortSignal: signal },
+      contents,
+    });
+
+    for await (const chunk of stream) {
+      if (chunk.text) yield chunk.text;
+    }
+  } catch (error) {
+    if (error?.status) {
+      const apiError = new Error(error.message || "Gemini API request failed");
+      apiError.status = error.status;
+      apiError.code = error.code;
+      throw apiError;
+    }
+    throw error;
+  }
+}
