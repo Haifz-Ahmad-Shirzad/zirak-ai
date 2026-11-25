@@ -10,6 +10,22 @@ import ChatMessageSkeleton from "../components/ChatMessageSkeleton";
 
 export default function Chat() {
   const [collapsed, setCollapsed] = useState(false);
+  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+  const [theme, setTheme] = useState(() => {
+    try {
+      return window.localStorage.getItem("zirak-theme") === "light" ? "light" : "dark";
+    } catch {
+      return "dark";
+    }
+  });
+
+  useEffect(() => {
+    try {
+      window.localStorage.setItem("zirak-theme", theme);
+    } catch {
+      // The app remains usable when browser storage is unavailable.
+    }
+  }, [theme]);
   // const [selectedModel, setSelectedModel] = useState("gemini");
   const [selectedModel, setSelectedModel] = useState("openrouter");
 
@@ -54,15 +70,23 @@ export default function Chat() {
   }, [messages]);
 
   return (
-    <div className="relative h-screen overflow-hidden bg-gray-950 text-white">
+    <div id="zirak-app" data-theme={theme} className="relative h-screen overflow-hidden bg-gray-950 text-white">
       <div className="flex h-full">
         <Sidebar
           collapsed={collapsed}
           setCollapsed={setCollapsed}
-          onNewChat={handleNewChat}
+          mobileOpen={mobileSidebarOpen}
+          setMobileOpen={setMobileSidebarOpen}
+          onNewChat={() => {
+            handleNewChat();
+            setMobileSidebarOpen(false);
+          }}
           conversations={conversations}
           activeConversationId={activeConversationId}
-          onConversationSelect={handleConversationSelect}
+          onConversationSelect={(id) => {
+            handleConversationSelect(id);
+            setMobileSidebarOpen(false);
+          }}
           onDeleteConversation={handleRequestDelete}
           editingConversationId={editingConversationId}
           onEditConversation={setEditingConversationId}
@@ -71,20 +95,23 @@ export default function Chat() {
         />
 
         {/* Mobile Overlay Backdrop */}
-        {!collapsed && (
-          <div
-            onClick={() => setCollapsed(true)}
+        {mobileSidebarOpen && (
+          <button
+            type="button"
+            onClick={() => setMobileSidebarOpen(false)}
             className="fixed inset-0 z-10 bg-black/50 md:hidden"
-            aria-hidden="true"
-          ></div>
+            aria-label="Close navigation"
+          />
         )}
 
         <div className="flex-1 flex flex-col min-w-0">
           <ChatHeader
             selectedModel={selectedModel}
             setSelectedModel={setSelectedModel}
-            collapsed={collapsed}
-            setCollapsed={setCollapsed}
+            mobileSidebarOpen={mobileSidebarOpen}
+            setMobileSidebarOpen={setMobileSidebarOpen}
+            theme={theme}
+            onToggleTheme={() => setTheme((current) => current === "dark" ? "light" : "dark")}
           />
 
           {/* Messages */}

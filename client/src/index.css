@@ -1,1 +1,61 @@
 @import "tailwindcss";
+
+#zirak-app {
+  --app-page: #101827;
+  --app-sidebar: #0c1423;
+  --app-surface: #172338;
+  --app-raised: #1f2d45;
+  --app-active: #263650;
+  --app-border: #2b3a52;
+  --app-text: #f4f0e6;
+  --app-muted: #a8b2c1;
+  --app-accent: #e1a638;
+  --app-accent-hover: #f0b847;
+  --app-accent-foreground: #101827;
+  color-scheme: dark;
+}
+
+#zirak-app[data-theme="light"] {
+  --app-page: #f7f4ec;
+  --app-sidebar: #f0ede4;
+  --app-surface: #fffefa;
+  --app-raised: #f4f0e6;
+  --app-active: #e9e2d4;
+  --app-border: #e4dfd3;
+  --app-text: #17233b;
+  --app-muted: #687386;
+  --app-accent: #d99a2b;
+  --app-accent-hover: #bf7e14;
+  --app-accent-foreground: #17233b;
+  color-scheme: light;
+}
+
+#zirak-app .bg-gray-950 { background-color: var(--app-page); }
+#zirak-app .bg-gray-900 { background-color: var(--app-sidebar); }
+#zirak-app .bg-gray-800 { background-color: var(--app-surface); }
+#zirak-app .bg-gray-700 { background-color: var(--app-active); }
+#zirak-app .bg-gray-600 { background-color: var(--app-raised); }
+#zirak-app .border-gray-700 { border-color: var(--app-border); }
+#zirak-app .text-white,
+#zirak-app .text-gray-100,
+#zirak-app .text-gray-200 { color: var(--app-text); }
+#zirak-app .text-gray-300,
+#zirak-app .text-gray-400,
+#zirak-app .text-gray-500,
+#zirak-app .placeholder-gray-500::placeholder { color: var(--app-muted); }
+
+#zirak-app .bg-blue-600 {
+  background-color: var(--app-accent);
+  color: var(--app-accent-foreground);
+}
+#zirak-app .bg-blue-700 { background-color: var(--app-accent-hover); }
+#zirak-app .bg-blue-600.text-white { color: var(--app-accent-foreground); }
+#zirak-app [class~="hover:bg-gray-800"]:hover { background-color: var(--app-raised); }
+#zirak-app [class~="hover:bg-gray-700"]:hover { background-color: var(--app-raised); }
+#zirak-app [class~="hover:bg-gray-600"]:hover { background-color: var(--app-active); }
+#zirak-app [class~="hover:bg-blue-700"]:hover { background-color: var(--app-accent-hover); }
+
+#zirak-app :focus-visible {
+  outline: 2px solid var(--app-accent);
+  outline-offset: 2px;
+}
