@@ -4,6 +4,7 @@ import { supportedLocales, t } from "../i18n.js";
 const DEFAULT_MODELS = [
   { id: "openrouter", name: "OpenRouter" },
   { id: "gemini", name: "Gemini" },
+  { id: "groq", name: "Groq" },
   { id: "openai", name: "OpenAI" },
 ];
 

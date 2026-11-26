@@ -1,11 +1,13 @@
 import { generateOpenAIResponse, streamOpenAIResponse } from "../services/openaiService.js";
 import { generateGeminiResponse, streamGeminiResponse } from "../services/geminiService.js";
 import { generateOpenRouterResponse, streamOpenRouterResponse } from "../services/openrouterService.js";
+import { generateGroqResponse, streamGroqResponse } from "../services/groqService.js";
 
 const providers = {
   openai: { generate: generateOpenAIResponse, stream: streamOpenAIResponse, label: "OpenAI" },
   gemini: { generate: generateGeminiResponse, stream: streamGeminiResponse, label: "Gemini" },
   openrouter: { generate: generateOpenRouterResponse, stream: streamOpenRouterResponse, label: "OpenRouter" },
+  groq: { generate: generateGroqResponse, stream: streamGroqResponse, label: "Groq" },
 };
 const ALLOWED_FILE_TYPES = new Set(["image/jpeg", "image/png", "image/webp", "application/pdf"]);
 const MAX_ATTACHMENTS = 4;
@@ -94,6 +96,16 @@ export async function chatController(req, res) {
     }
     if (provider === "openrouter" && (attachments.length > 0 || historyFiles.length > 0)) {
       return res.status(400).json({ success: false, error: "Image and PDF attachments are available with OpenAI or Gemini. Please switch providers." });
+    }
+    const allFiles = [...attachments, ...historyFiles];
+    if (provider === "groq" && allFiles.some((file) => file.type === "application/pdf")) {
+      return res.status(400).json({ success: false, error: "Groq currently accepts images only. Use OpenAI or Gemini for PDF files." });
+    }
+    if (provider === "groq" && (allFiles.length > 3 || currentFiles.totalBytes + historyFiles.reduce((sum, file) => {
+      const encoded = file.data.split(",")[1] || "";
+      return sum + Math.floor(encoded.length * 3 / 4) - (encoded.endsWith("==") ? 2 : encoded.endsWith("=") ? 1 : 0);
+    }, 0) > 7 * 1024 * 1024)) {
+      return res.status(413).json({ success: false, error: "Groq supports up to 3 images and 7 MB total per chat request." });
     }
     if ((attachments.length > 0 || historyFiles.length > 0) && stream !== true) {
       return res.status(400).json({ success: false, error: "Attachments require streamed chat requests." });

@@ -217,6 +217,10 @@ export default function Chat() {
             disabled={loading}
             locale={locale}
             attachmentsEnabled={selectedModel !== "openrouter"}
+            allowPdf={selectedModel !== "groq"}
+            maxAttachments={selectedModel === "groq" ? 3 : 4}
+            maxTotalBytes={selectedModel === "groq" ? 7 * 1024 * 1024 : 10 * 1024 * 1024}
+            provider={selectedModel}
           />
         </div>
       </div>

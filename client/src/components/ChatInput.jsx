@@ -3,8 +3,8 @@ import { FileText, Paperclip, Send, Square, X } from "lucide-react";
 import { useAutoResizeTextarea } from "../hooks/useAutoResizeTextarea.js";
 import { t } from "../i18n.js";
 
-const MAX_FILES = 4;
-const MAX_TOTAL_BYTES = 10 * 1024 * 1024;
+const DEFAULT_MAX_FILES = 4;
+const DEFAULT_MAX_TOTAL_BYTES = 10 * 1024 * 1024;
 const ACCEPTED_TYPES = new Set(["image/jpeg", "image/png", "image/webp", "application/pdf"]);
 
 const readAsDataUrl = (file) =>
@@ -15,7 +15,17 @@ const readAsDataUrl = (file) =>
     reader.readAsDataURL(file);
   });
 
-export default function ChatInput({ onSend, onStop, disabled, locale = "en", attachmentsEnabled = true }) {
+export default function ChatInput({
+  onSend,
+  onStop,
+  disabled,
+  locale = "en",
+  attachmentsEnabled = true,
+  allowPdf = true,
+  maxAttachments = DEFAULT_MAX_FILES,
+  maxTotalBytes = DEFAULT_MAX_TOTAL_BYTES,
+  provider = "openai",
+}) {
   const [input, setInput] = useState("");
   const [files, setFiles] = useState([]);
   const [fileError, setFileError] = useState("");
@@ -50,19 +60,20 @@ export default function ChatInput({ onSend, onStop, disabled, locale = "en", att
 
     const nextFiles = [...filesRef.current];
     let totalBytes = nextFiles.reduce((sum, item) => sum + item.file.size, 0);
+    const acceptedTypes = allowPdf ? ACCEPTED_TYPES : new Set(["image/jpeg", "image/png", "image/webp"]);
 
     for (const file of Array.from(fileList || [])) {
-      if (!ACCEPTED_TYPES.has(file.type)) {
+      if (!acceptedTypes.has(file.type)) {
         setFileError(t(locale, "unsupportedFile"));
         continue;
       }
-      const fileLimit = file.type === "application/pdf" ? MAX_TOTAL_BYTES : 5 * 1024 * 1024;
+      const fileLimit = file.type === "application/pdf" ? maxTotalBytes : 5 * 1024 * 1024;
       if (file.size > fileLimit) {
         setFileError(t(locale, "fileTooLarge"));
         continue;
       }
-      if (nextFiles.length >= MAX_FILES || totalBytes + file.size > MAX_TOTAL_BYTES) {
-        setFileError(t(locale, "attachmentLimit"));
+      if (nextFiles.length >= maxAttachments || totalBytes + file.size > maxTotalBytes) {
+        setFileError(t(locale, provider === "groq" ? "groqAttachmentLimit" : "attachmentLimit"));
         break;
       }
       nextFiles.push({
@@ -144,7 +155,7 @@ export default function ChatInput({ onSend, onStop, disabled, locale = "en", att
         )}
 
         <div className="flex items-end gap-2 sm:gap-3">
-          <input ref={fileInputRef} type="file" accept="image/jpeg,image/png,image/webp,application/pdf"
+          <input ref={fileInputRef} type="file" accept={allowPdf ? "image/jpeg,image/png,image/webp,application/pdf" : "image/jpeg,image/png,image/webp"}
             multiple className="sr-only" onChange={(event) => handleFileSelection(event.target.files)}
             aria-label={t(locale, "attachFiles")} />
           <button type="button" onClick={() => fileInputRef.current?.click()}
@@ -179,7 +190,7 @@ export default function ChatInput({ onSend, onStop, disabled, locale = "en", att
         </div>
         {fileError && <p role="alert" className="mt-2 text-sm text-red-400">{fileError}</p>}
         {!attachmentsEnabled && <p className="mt-2 text-xs text-gray-400">{t(locale, "chooseVisionProvider")}</p>}
-        <p className="mt-2 text-xs text-gray-400">{t(locale, "attachmentHelp")}</p>
+        <p className="mt-2 text-xs text-gray-400">{provider === "groq" ? t(locale, "groqImageHelp") : t(locale, "attachmentHelp")}</p>
       </div>
     </div>
   );

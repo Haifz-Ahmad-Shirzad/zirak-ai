@@ -42,6 +42,8 @@ const messages = {
     attachmentLimit: "Attach up to 4 files, with a combined size limit of 10 MB.",
     attachmentHelp: "JPG, PNG, WEBP, PDF · up to 4 files · 10 MB total",
     fileReadFailed: "Could not read this file. Please try again.",
+    groqImageHelp: "Groq supports up to 3 images and 7 MB per request; choose OpenAI or Gemini for PDFs.",
+    groqAttachmentLimit: "Groq supports up to 3 images per chat request.",
   },
   ps: {
     newChat: "نوی چیټ",
@@ -86,6 +88,8 @@ const messages = {
     attachmentLimit: "تر ۴ فایلونو پورې نښلولای شئ؛ ټول حجم باید تر ۱۰ MB کم وي.",
     attachmentHelp: "JPG، PNG، WEBP، PDF · تر ۴ فایلونو · ټول ۱۰ MB",
     fileReadFailed: "فایل لوستل کېدای نه شو. بیا هڅه وکړئ.",
+    groqImageHelp: "Groq په هره غوښتنه کې تر ۳ انځورونو او ۷ MB پورې مني؛ د PDF لپاره OpenAI یا Gemini وټاکئ.",
+    groqAttachmentLimit: "Groq په هره غوښتنه کې تر ۳ انځورونو پورې مني.",
   },
   fa: {
     newChat: "گفتگوی جدید",
@@ -130,6 +134,8 @@ const messages = {
     attachmentLimit: "حداکثر ۴ فایل با مجموع حجم ۱۰ مگابایت پیوست کنید.",
     attachmentHelp: "JPG، PNG، WEBP، PDF · حداکثر ۴ فایل · مجموع ۱۰ مگابایت",
     fileReadFailed: "خواندن فایل ممکن نشد. دوباره تلاش کنید.",
+    groqImageHelp: "Groq در هر درخواست حداکثر ۳ تصویر و ۷ مگابایت می‌پذیرد؛ برای PDF از OpenAI یا Gemini استفاده کنید.",
+    groqAttachmentLimit: "Groq در هر درخواست حداکثر ۳ تصویر می‌پذیرد.",
   },
 };
 
