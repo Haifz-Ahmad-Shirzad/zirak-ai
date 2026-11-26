@@ -105,7 +105,7 @@ export async function generateGeminiResponse(message, history = []) {
 }
 
 
-export async function* streamGeminiResponse(message, history = [], { signal } = {}) {
+export async function* streamGeminiResponse(message, history = [], attachments = [], { signal } = {}) {
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) {
     const error = new Error("Gemini API key is not configured");
@@ -114,12 +114,23 @@ export async function* streamGeminiResponse(message, history = [], { signal } = 
   }
 
   const ai = new GoogleGenAI({ apiKey });
-  const contents = [
-    ...history.map((item) => ({
-      role: item.role === "assistant" ? "model" : "user",
-      parts: [{ text: String(item.content ?? "") }],
+  const toParts = (text, files = []) => [
+    ...(text ? [{ text }] : []),
+    ...files.map((file) => ({
+      inlineData: {
+        mimeType: file.type,
+        data: file.data.slice(file.data.indexOf(",") + 1),
+      },
     })),
-    { role: "user", parts: [{ text: message }] },
+  ];
+  const contents = [
+    ...history
+      .filter((item) => item.content || item.attachments?.length)
+      .map((item) => ({
+        role: item.role === "assistant" ? "model" : "user",
+        parts: toParts(String(item.content ?? ""), item.attachments || []),
+      })),
+    { role: "user", parts: toParts(message, attachments) },
   ];
 
   try {
@@ -128,7 +139,6 @@ export async function* streamGeminiResponse(message, history = [], { signal } = 
       config: { systemInstruction: ZIRAK_SYSTEM_INSTRUCTION, abortSignal: signal },
       contents,
     });
-
     for await (const chunk of stream) {
       if (chunk.text) yield chunk.text;
     }

@@ -216,6 +216,7 @@ export default function Chat() {
             onStop={handleStopGenerating}
             disabled={loading}
             locale={locale}
+            attachmentsEnabled={selectedModel !== "openrouter"}
           />
         </div>
       </div>

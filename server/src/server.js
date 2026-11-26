@@ -20,7 +20,7 @@ app.use(cors({
     return callback(new Error("Origin is not allowed by CORS."));
   },
 }));
-app.use(express.json({ limit: "1mb" }));
+app.use(express.json({ limit: "16mb" }));
 
 const chatWindowMs = 60_000;
 const chatRequestLimit = Math.max(1, Number(process.env.CHAT_RATE_LIMIT) || 20);

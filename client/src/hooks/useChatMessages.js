@@ -32,6 +32,7 @@ export function useChatMessages(
   const [editingMessage, setEditingMessage] = useState(null);
 
   const abortControllerRef = useRef(null);
+  const attachmentCacheRef = useRef(new Map());
 
   /*
    * Keep only the ID as the stable conversation reference.
@@ -70,10 +71,10 @@ export function useChatMessages(
    * Send a message.
    */
   const handleSend = useCallback(
-    async (input) => {
+    async (input, attachments = []) => {
       const text = input.trim();
 
-      if (!text || !conversationId || loading) {
+      if ((!text && attachments.length === 0) || !conversationId || loading) {
         return;
       }
 
@@ -81,7 +82,10 @@ export function useChatMessages(
        * Capture the current history BEFORE
        * adding the new user message.
        */
-      const history = activeConversation?.messages || [];
+      const history = (activeConversation?.messages || []).map((item) => ({
+        ...item,
+        attachments: attachmentCacheRef.current.get(item.id) || [],
+      }));
 
       /*
        * Create user message.
@@ -90,7 +94,11 @@ export function useChatMessages(
         id: uuidv4(),
         role: "user",
         content: text,
+        attachments: attachments.map(({ name, type, size }) => ({ name, type, size })),
       };
+      if (attachments.length > 0) {
+        attachmentCacheRef.current.set(userMessage.id, attachments);
+      }
 
       /*
        * Add user message immediately.
@@ -137,6 +145,8 @@ export function useChatMessages(
             message: text,
             provider: selectedModel,
             history,
+            attachments,
+
             stream: true,
           }),
 
@@ -306,7 +316,7 @@ export function useChatMessages(
     /*
      * Generate the response again.
      */
-    handleSend(lastUserMessage.content);
+    handleSend(lastUserMessage.content, attachmentCacheRef.current.get(lastUserMessage.id) || []);
   }, [activeConversation, handleSend, updateMessages]);
 
   /*

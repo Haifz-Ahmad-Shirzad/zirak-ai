@@ -67,7 +67,13 @@ export async function generateOpenRouterResponse(message, history = []) {
 }
 
 
-export async function* streamOpenRouterResponse(message, history = [], { signal } = {}) {
+export async function* streamOpenRouterResponse(message, history = [], attachments = [], { signal } = {}) {
+  if (attachments.length > 0 || history.some((item) => item.attachments?.length)) {
+    const error = new Error("Image and PDF attachments are available with OpenAI or Gemini. Please switch providers.");
+    error.status = 400;
+    throw error;
+  }
+
   const apiKey = process.env.OPENROUTER_API_KEY;
   if (!apiKey) {
     const error = new Error("OpenRouter API key is not configured");

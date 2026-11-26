@@ -12,6 +12,7 @@ import {
   ThumbsUp,
   ThumbsDown,
   AlertTriangle,
+  Paperclip,
 } from "lucide-react";
 
 export default function ChatMessage({
@@ -26,6 +27,7 @@ export default function ChatMessage({
 }) {
   const safeMessage = message || { id: "", role: "assistant", content: "" };
   const { role, content = "", error } = safeMessage;
+  const attachments = Array.isArray(safeMessage.attachments) ? safeMessage.attachments : [];
   const isUser = role === "user";
   const [editText, setEditText] = useState(content);
   const [isCopied, handleCopy] = useCopyToClipboard();
@@ -57,6 +59,17 @@ export default function ChatMessage({
       </div>
 
       <div className="flex-1 min-w-0">
+        {attachments.length > 0 && (
+          <div className="mb-3 flex flex-wrap gap-2" aria-label={t(locale, "attachments")}>
+            {attachments.map((file, index) => (
+              <div key={`${file.name}-${index}`} className="inline-flex max-w-full items-center gap-2 rounded-lg border border-gray-700 bg-gray-800 px-3 py-2 text-sm">
+                <Paperclip className="h-4 w-4 shrink-0" />
+                <span className="max-w-56 truncate">{file.name}</span>
+                <span className="text-xs text-gray-400">{file.type === "application/pdf" ? "PDF" : "Image"}</span>
+              </div>
+            ))}
+          </div>
+        )}
         {isEditing ? (
           <div className="flex flex-col gap-2">
             <textarea
