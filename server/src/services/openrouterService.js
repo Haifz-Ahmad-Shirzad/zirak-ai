@@ -65,3 +65,43 @@ export async function generateOpenRouterResponse(message, history = []) {
 
   return response.choices[0].message.content;
 }
+
+
+export async function* streamOpenRouterResponse(message, history = [], attachments = [], { signal } = {}) {
+  if (attachments.length > 0 || history.some((item) => item.attachments?.length)) {
+    const error = new Error("Image and PDF attachments are available with OpenAI or Gemini. Please switch providers.");
+    error.status = 400;
+    throw error;
+  }
+
+  const apiKey = process.env.OPENROUTER_API_KEY;
+  if (!apiKey) {
+    const error = new Error("OpenRouter API key is not configured");
+    error.status = 500;
+    throw error;
+  }
+
+  const client = new OpenAI({
+    apiKey,
+    baseURL: "https://openrouter.ai/api/v1",
+  });
+  const messages = [
+    { role: "system", content: ZIRAK_SYSTEM_INSTRUCTION },
+    ...history.map((item) => ({
+      role: item.role === "assistant" ? "assistant" : "user",
+      content: String(item.content ?? ""),
+    })),
+    { role: "user", content: message },
+  ];
+
+  const stream = await client.chat.completions.create({
+    model: "openrouter/free",
+    messages,
+    stream: true,
+  }, { signal });
+
+  for await (const chunk of stream) {
+    const delta = chunk.choices?.[0]?.delta?.content;
+    if (typeof delta === "string" && delta.length > 0) yield delta;
+  }
+}
