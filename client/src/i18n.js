@@ -44,6 +44,7 @@ const messages = {
     fileReadFailed: "Could not read this file. Please try again.",
     groqImageHelp: "Groq supports up to 3 images and 7 MB per request; choose OpenAI or Gemini for PDFs.",
     groqAttachmentLimit: "Groq supports up to 3 images per chat request.",
+    groqPdfUnsupported: "Groq accepts images only. Remove the PDF or choose OpenAI or Gemini.",
   },
   ps: {
     newChat: "نوی چیټ",
@@ -90,6 +91,7 @@ const messages = {
     fileReadFailed: "فایل لوستل کېدای نه شو. بیا هڅه وکړئ.",
     groqImageHelp: "Groq په هره غوښتنه کې تر ۳ انځورونو او ۷ MB پورې مني؛ د PDF لپاره OpenAI یا Gemini وټاکئ.",
     groqAttachmentLimit: "Groq په هره غوښتنه کې تر ۳ انځورونو پورې مني.",
+    groqPdfUnsupported: "Groq یوازې انځورونه مني. PDF لرې کړئ یا OpenAI یا Gemini وټاکئ.",
   },
   fa: {
     newChat: "گفتگوی جدید",
@@ -136,6 +138,7 @@ const messages = {
     fileReadFailed: "خواندن فایل ممکن نشد. دوباره تلاش کنید.",
     groqImageHelp: "Groq در هر درخواست حداکثر ۳ تصویر و ۷ مگابایت می‌پذیرد؛ برای PDF از OpenAI یا Gemini استفاده کنید.",
     groqAttachmentLimit: "Groq در هر درخواست حداکثر ۳ تصویر می‌پذیرد.",
+    groqPdfUnsupported: "Groq فقط تصویر می‌پذیرد. PDF را حذف کنید یا OpenAI یا Gemini را انتخاب کنید.",
   },
 };
 

@@ -105,6 +105,10 @@ export default function ChatInput({
       setFileError(t(locale, "chooseVisionProvider"));
       return;
     }
+    if (!allowPdf && files.some((item) => item.file.type === "application/pdf")) {
+      setFileError(t(locale, "groqPdfUnsupported"));
+      return;
+    }
 
     try {
       const attachments = await Promise.all(files.map(async ({ file }) => ({
