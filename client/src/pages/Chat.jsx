@@ -6,6 +6,7 @@ import ChatHeader from "../components/ChatHeader";
 import ChatMessage from "../components/ChatMessage";
 import ChatInput from "../components/ChatInput";
 import ConfirmModal from "../components/ConfirmModal";
+import ProfileDialog from "../components/ProfileDialog";
 import ChatMessageSkeleton from "../components/ChatMessageSkeleton";
 import { t } from "../i18n.js";
 
@@ -18,6 +19,14 @@ export default function Chat() {
     }
   });
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+  const [profileOpen, setProfileOpen] = useState(false);
+  const [profileName, setProfileName] = useState(() => {
+    try {
+      return window.localStorage.getItem("zirak-profile-name") || "Hafiz Ahmad Shirzad";
+    } catch {
+      return "Hafiz Ahmad Shirzad";
+    }
+  });
   const [locale, setLocale] = useState(() => {
     try {
       const saved = window.localStorage.getItem("zirak-locale");
@@ -49,6 +58,14 @@ export default function Chat() {
       // The app remains usable when browser storage is unavailable.
     }
   }, [locale]);
+
+  useEffect(() => {
+    try {
+      window.localStorage.setItem("zirak-profile-name", profileName);
+    } catch {
+      // The profile remains usable when browser storage is unavailable.
+    }
+  }, [profileName]);
 
   useEffect(() => {
     try {
@@ -118,6 +135,8 @@ export default function Chat() {
           mobileOpen={mobileSidebarOpen}
           setMobileOpen={setMobileSidebarOpen}
           locale={locale}
+          profileName={profileName}
+          onOpenProfile={() => setProfileOpen(true)}
           onNewChat={() => {
             handleNewChat();
             setMobileSidebarOpen(false);
@@ -224,6 +243,17 @@ export default function Chat() {
           />
         </div>
       </div>
+
+      <ProfileDialog
+        isOpen={profileOpen}
+        onClose={() => setProfileOpen(false)}
+        profileName={profileName}
+        onSaveProfile={setProfileName}
+        theme={theme}
+        setTheme={setTheme}
+        locale={locale}
+        setLocale={setLocale}
+      />
 
       <ConfirmModal
         isOpen={isModalOpen}
