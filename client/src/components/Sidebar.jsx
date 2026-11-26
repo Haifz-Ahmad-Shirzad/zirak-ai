@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { t } from "../i18n.js";
 import {
   Plus,
@@ -7,6 +7,8 @@ import {
   MessageSquare,
   Trash2,
   Pencil,
+  MoreHorizontal,
+  Check,
   Search,
   X,
 } from "lucide-react";
@@ -30,6 +32,17 @@ export default function Sidebar({
   onUpdateConversationTitle,
 }) {
   const [searchQuery, setSearchQuery] = useState("");
+  const [openMenuId, setOpenMenuId] = useState(null);
+  const [editingTitle, setEditingTitle] = useState("");
+
+  useEffect(() => {
+    if (!openMenuId) return undefined;
+    const closeOnEscape = (event) => {
+      if (event.key === "Escape") setOpenMenuId(null);
+    };
+    document.addEventListener("keydown", closeOnEscape);
+    return () => document.removeEventListener("keydown", closeOnEscape);
+  }, [openMenuId]);
 
   const filteredConversations = conversations.filter((conv) =>
     conv.title.toLowerCase().includes(searchQuery.toLowerCase()),
@@ -97,82 +110,133 @@ export default function Sidebar({
       )}
 
       <ul
-        className="flex-1 overflow-y-auto mt-4 px-2"
+        className="mt-4 flex-1 overflow-y-auto px-2"
         aria-label={t(locale, "chatHistory")}
       >
-        {filteredConversations.map((conv) => (
-          <li key={conv.id}>
-            <div className="relative group">
-              <button
-                type="button"
-                onClick={() => onConversationSelect(conv.id)}
-                title={collapsed ? conv.title : undefined}
-                className={`w-full min-h-10 flex items-center gap-3 px-3 py-2 text-left rounded-lg text-sm ${
-                  activeConversationId === conv.id
-                    ? "bg-gray-700"
-                    : "hover:bg-gray-800 cursor-pointer"
-                }`}
-                aria-current={activeConversationId === conv.id ? "page" : undefined}
-              >
-                <MessageSquare className="w-4 h-4 shrink-0" />
-                <div className="flex-1 truncate">
-                  {!collapsed &&
-                    (editingConversationId === conv.id ? (
-                      <input
-                        type="text"
-                        aria-label="Edit conversation title"
-                        defaultValue={conv.title}
-                        autoFocus
-                        onFocus={(e) => e.target.select()}
-                        onBlur={(e) =>
-                          onUpdateConversationTitle(conv.id, e.target.value)
+        {filteredConversations.map((conv) => {
+          const isEditing = editingConversationId === conv.id;
+          const isMenuOpen = openMenuId === conv.id;
+          const saveTitle = () => {
+            onUpdateConversationTitle(conv.id, editingTitle);
+            onCancelEditConversation();
+            setEditingTitle("");
+          };
+
+          return (
+            <li key={conv.id} className="relative">
+              <div className="group flex min-h-11 items-center gap-1 rounded-lg">
+                {isEditing ? (
+                  <div className="flex min-w-0 flex-1 items-center gap-1">
+                    <input
+                      type="text"
+                      aria-label={t(locale, "renameConversation")}
+                      value={editingTitle}
+                      maxLength={100}
+                      autoFocus
+                      onChange={(event) => setEditingTitle(event.target.value)}
+                      onKeyDown={(event) => {
+                        if (event.key === "Enter") {
+                          event.preventDefault();
+                          saveTitle();
+                        } else if (event.key === "Escape") {
+                          onCancelEditConversation();
+                          setEditingTitle("");
                         }
-                        onKeyDown={(e) => {
-                          if (e.key === "Enter") {
-                            onUpdateConversationTitle(conv.id, e.target.value);
-                          } else if (e.key === "Escape") {
-                            onCancelEditConversation();
-                          }
-                        }}
-                        onClick={(e) => e.stopPropagation()}
-                        className="bg-gray-600 text-white w-full rounded px-1 -my-1 text-sm focus:outline-none"
-                      />
-                    ) : (
-                      <span className="truncate">{conv.title}</span>
-                    ))}
-                </div>
-              </button>
-              {!collapsed &&
-                editingConversationId !== conv.id &&
-                activeConversationId === conv.id && (
-                  <div className="absolute right-1 top-1/2 -translate-y-1/2 flex items-center opacity-0 group-hover:opacity-100 transition-opacity">
+                      }}
+                      className="min-h-10 min-w-0 flex-1 rounded-lg border border-gray-700 bg-gray-800 px-2 text-sm text-white outline-none focus:ring-2 focus:ring-blue-500"
+                    />
                     <button
                       type="button"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onEditConversation(conv.id);
-                      }}
-                      className="min-h-10 min-w-10 rounded-lg hover:bg-gray-600"
-                      aria-label={t(locale, "editTitle")}
+                      onClick={saveTitle}
+                      disabled={!editingTitle.trim()}
+                      className="inline-flex min-h-10 min-w-10 items-center justify-center rounded-lg hover:bg-gray-700 disabled:opacity-40"
+                      aria-label={t(locale, "save")}
+                      title={t(locale, "save")}
                     >
-                      <Pencil className="w-4 h-4 mx-auto" />
+                      <Check className="h-4 w-4" />
                     </button>
                     <button
                       type="button"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onDeleteConversation(conv.id);
+                      onClick={() => {
+                        onCancelEditConversation();
+                        setEditingTitle("");
                       }}
-                      className="min-h-10 min-w-10 rounded-lg hover:bg-gray-600"
-                      aria-label="Delete conversation"
+                      className="inline-flex min-h-10 min-w-10 items-center justify-center rounded-lg hover:bg-gray-700"
+                      aria-label={t(locale, "cancel")}
+                      title={t(locale, "cancel")}
                     >
-                      <Trash2 className="w-4 h-4 mx-auto" />
+                      <X className="h-4 w-4" />
                     </button>
                   </div>
+                ) : (
+                  <>
+                    <button
+                      type="button"
+                      onClick={() => onConversationSelect(conv.id)}
+                      title={collapsed ? conv.title : undefined}
+                      className={`flex min-h-10 min-w-0 flex-1 items-center gap-3 rounded-lg px-3 py-2 text-left text-sm ${
+                        activeConversationId === conv.id
+                          ? "bg-gray-700"
+                          : "hover:bg-gray-800"
+                      }`}
+                      aria-current={activeConversationId === conv.id ? "page" : undefined}
+                    >
+                      <MessageSquare className="h-4 w-4 shrink-0" />
+                      {!collapsed && <span className="truncate">{conv.title}</span>}
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => setOpenMenuId(isMenuOpen ? null : conv.id)}
+                      className="inline-flex min-h-10 min-w-10 shrink-0 items-center justify-center rounded-lg opacity-100 hover:bg-gray-700 focus-visible:opacity-100 lg:opacity-0 lg:group-hover:opacity-100 lg:group-focus-within:opacity-100"
+                      aria-label={t(locale, "chatActions")}
+                      aria-haspopup="menu"
+                      aria-expanded={isMenuOpen}
+                      title={t(locale, "chatActions")}
+                    >
+                      <MoreHorizontal className="h-5 w-5" />
+                    </button>
+                  </>
                 )}
-            </div>
-          </li>
-        ))}
+              </div>
+
+              {isMenuOpen && !isEditing && (
+                <div
+                  role="menu"
+                  aria-label={t(locale, "chatActions")}
+                  className="absolute right-1 top-10 z-30 min-w-40 rounded-xl border border-gray-700 bg-gray-900 p-1 text-sm shadow-xl"
+                >
+                  <button
+                    type="button"
+                    role="menuitem"
+                    onClick={() => {
+                      setEditingTitle(conv.title);
+                      setOpenMenuId(null);
+                      setCollapsed(false);
+                      onEditConversation(conv.id);
+                    }}
+                    className="flex min-h-10 w-full items-center gap-2 rounded-lg px-3 text-left hover:bg-gray-800"
+                  >
+                    <Pencil className="h-4 w-4" />
+                    {t(locale, "renameConversation")}
+                  </button>
+                  <button
+                    type="button"
+                    role="menuitem"
+                    onClick={() => {
+                      setOpenMenuId(null);
+                      onDeleteConversation(conv.id);
+                    }}
+                    className="flex min-h-10 w-full items-center gap-2 rounded-lg px-3 text-left text-red-400 hover:bg-gray-800"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                    {t(locale, "deleteConversation")}
+                  </button>
+                </div>
+              )}
+            </li>
+          );
+        })}
       </ul>
 
       <div className="border-t border-gray-700 p-3">
